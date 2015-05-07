@@ -45,7 +45,12 @@ static int reg_fpga_voltage_probe(struct platform_device *pdev)
 		goto err;
 	}
 
-	init_data = of_get_regulator_init_data(&pdev->dev, pdev->dev.of_node);
+	drvdata->desc.type = REGULATOR_VOLTAGE;
+	drvdata->desc.owner = THIS_MODULE;
+	drvdata->desc.ops = &fpga_voltage_ops;
+
+	init_data = of_get_regulator_init_data(&pdev->dev,
+		pdev->dev.of_node, &drvdata->desc);
 	if (!init_data) {
 		dev_err(&pdev->dev, "Failed to get init_data\n");
 		ret = -EINVAL;
@@ -58,9 +63,7 @@ static int reg_fpga_voltage_probe(struct platform_device *pdev)
 		ret = -ENOMEM;
 		goto err;
 	}
-	drvdata->desc.type = REGULATOR_VOLTAGE;
-	drvdata->desc.owner = THIS_MODULE;
-	drvdata->desc.ops = &fpga_voltage_ops;
+
 	drvdata->desc.fixed_uV = init_data->constraints.min_uV;
 
 	cfg.dev = &pdev->dev;
